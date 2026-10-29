@@ -1,258 +1,426 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EDEN · Evolution Wars</title><meta name="description" content="A live evolution sim on a Raspberry Pi: three species evolve on their own, civilization grows only if people play.">
+<title>EDEN, a world that evolves on its own</title>
+<meta name="description" content="Three species evolve on their own, live on a Raspberry Pi. Their civilization only grows if people play.">
+<meta property="og:title" content="EDEN, a world that evolves on its own"><meta property="og:image" content="art/era_istinto.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1116;--panel:#121c23;--line:#24343d;--ink:#ecefe9;--muted:#9aa9ad;--gold:#ecbe78;--parch:#ead2a0;--brown:#3a2614}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-a{color:var(--gold)}main{max-width:1180px;margin:0 auto;padding:0 16px 48px}
-.hero{position:relative;min-height:340px;display:flex;align-items:flex-end;background:#000 center/cover no-repeat;border-bottom:3px solid var(--gold)}
-.hero .in{width:100%;padding:28px 16px;background:linear-gradient(transparent,rgba(5,8,10,.92) 55%)}
-.hero h1{margin:0;font-size:clamp(30px,6vw,56px);letter-spacing:2px}.hero p{margin:4px 0;color:#d8d2c2}
-.btn{display:inline-block;margin:10px 8px 0 0;padding:10px 16px;border-radius:8px;background:var(--gold);color:#201409;font-weight:700;text-decoration:none}
-.btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
-h2{margin:40px 0 12px;font-size:26px;color:var(--gold)}h2 small{display:block;font-size:14px;color:var(--muted);font-weight:400}
-.progress{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:16px;align-items:center}
-.progress img{width:56px}.bar{height:16px;background:#2a1a10;border:2px solid var(--gold);border-radius:8px;overflow:hidden}
-.bar span{display:block;height:100%;background:linear-gradient(90deg,#f6a43a,#ffd774)}
-.factions{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
-.faction{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:16px}
-.faction .emblem{width:64px;float:right}.faction h3{margin:0;color:var(--c);font-size:24px}.role{margin:0;color:var(--muted)}
-.big{font-size:26px;font-weight:800;margin:10px 0}.big small{font-size:14px;color:var(--muted);font-weight:400}
-.label{margin:10px 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
-.form{display:flex;gap:4px}.form i{width:16px;height:16px;border-radius:4px;background:#26343b}
-.faction ul{margin:0;padding-left:18px}
-.tree{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px}
-.era{flex:0 0 300px;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-.era h3{margin:0;color:var(--gold)}.era h3 small{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.era.future{opacity:.55}.era.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-.era-story{color:var(--muted);font-size:14px;margin:4px 0 12px}
-.node{display:flex;gap:10px;padding:10px;margin:8px 0;border:1px solid var(--line);border-radius:10px;background:#0e161c}
-.node.found{border-color:var(--gold)}.node .icon{flex:0 0 56px;height:56px;display:flex;align-items:center;justify-content:center}
-.node img{max-width:56px;max-height:56px;filter:grayscale(.85) brightness(.75)}.node.found img{filter:none}
-.q{font-size:28px;font-weight:800;color:#56656b}.node b{display:block}.node p{margin:4px 0;font-size:13px;color:#c9d1cf}
-.need,.req{display:inline-block;margin:2px 6px 0 0;padding:1px 8px;border-radius:999px;font-size:11px;background:#22313a;color:var(--muted)}
-.req{background:#3a2c18;color:var(--gold)}.owners{display:flex;gap:4px;align-items:center}.owners i{width:14px;height:14px;border-radius:50%}
-.owners em{font-size:12px;color:#6d7c80}
-.book{background:var(--parch);color:var(--brown);border:4px solid #b88a3e;border-radius:10px;padding:28px 6%;box-shadow:inset 0 0 40px rgba(120,80,30,.35)}
-.book h2 img{width:44px;vertical-align:middle;margin-right:10px}
-.book h2{color:#7a281c;margin-top:0;text-align:center}.book ol{list-style:none;margin:0;padding:0;max-height:520px;overflow:auto}
-.book li{padding:6px 0;border-bottom:1px dashed rgba(58,38,20,.25)}.book li b{color:#7a281c}
-.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.cols>div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.cols h3{margin-top:0;color:var(--gold)}
-footer{color:var(--muted);font-size:13px;text-align:center;margin-top:40px}
-@media (max-width:600px){.book{padding:20px 16px}.hero{min-height:260px}}
+:root{--water:#0f2830;--kelp:#173c45;--deep:#0a1d23;--foam:#e8f1ea;--reed:#9db8af;--ember:#f2b65a;--parch:#ebd6a6;--ink:#3a2614;
+--rav:#e25252;--nom:#49bfda;--syl:#5dca79;--sans:"Bricolage Grotesque",system-ui,sans-serif;--serif:"Newsreader",Georgia,serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--water);color:var(--foam);font:17px/1.55 var(--sans);font-optical-sizing:auto}
+a{color:var(--ember)}:focus-visible{outline:3px solid var(--ember);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+/* Hero: il genoma vivo */
+.hero{position:relative;min-height:min(100vh,860px);display:grid;align-items:center;overflow:hidden;
+  background:radial-gradient(120% 90% at 75% 45%,#16414b 0%,var(--water) 55%,var(--deep) 100%)}
+#helix{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.hero .wrap{position:relative;width:100%;pointer-events:none}
+.hero-text{max-width:30rem;pointer-events:auto}
+h1{font-size:clamp(76px,15vw,184px);line-height:.82;margin:0;font-weight:800;letter-spacing:-.04em;
+  font-variation-settings:"opsz" 96;background:linear-gradient(100deg,var(--rav),var(--ember) 35%,var(--syl) 65%,var(--nom));
+  -webkit-background-clip:text;background-clip:text;color:transparent;background-size:220% 100%;animation:sheen 14s ease-in-out infinite alternate}
+@keyframes sheen{to{background-position:100% 0}}
+.lede{font:italic 400 clamp(22px,2.6vw,30px)/1.3 var(--serif);margin:18px 0 10px;color:var(--foam)}
+.when{color:var(--reed);margin:0 0 26px}
+.play{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.keys{display:flex;gap:8px}
+kbd{font:800 20px/1 var(--sans);display:inline-grid;place-items:center;min-width:1.9em;height:1.9em;border-radius:10px;
+  background:var(--kelp);border-bottom:3px solid rgba(0,0,0,.45);padding:0 .3em}
+.keys kbd{font-size:28px;width:56px;height:56px}
+.keys kbd:nth-child(1){color:var(--syl)}.keys kbd:nth-child(2){color:var(--nom)}.keys kbd:nth-child(3){color:var(--rav)}
+.btn{display:inline-block;padding:15px 22px;border-radius:14px;background:var(--ember);color:#2b1806;font-weight:800;text-decoration:none}
+.btn.quiet{background:transparent;color:var(--foam);box-shadow:inset 0 0 0 2px rgba(232,241,234,.35)}
+.tip{position:absolute;pointer-events:none;background:rgba(10,29,35,.92);border:1px solid rgba(232,241,234,.15);border-radius:12px;
+  padding:10px 12px;font-size:14px;min-width:190px;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+.tip.on{opacity:1;transform:none}.tip b{display:block;font-size:16px;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:12px}.tip i{font-style:normal;color:var(--reed)}
+.legend{position:absolute;right:20px;bottom:18px;color:var(--reed);font-size:14px;max-width:24rem;text-align:right;pointer-events:none}
+/* Sezioni */
+section.block{padding:84px 0 0}
+h2{font-size:clamp(34px,5vw,56px);line-height:1;margin:0 0 10px;font-weight:800;letter-spacing:-.02em}
+.sub{font:italic 400 21px/1.4 var(--serif);color:var(--reed);margin:0 0 30px;max-width:44rem}
+/* Prossima era */
+.age-next{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding:22px 0;border-top:1px solid rgba(232,241,234,.12);border-bottom:1px solid rgba(232,241,234,.12)}
+.flame{width:64px;transform-origin:50% 90%;animation:flicker 2.6s ease-in-out infinite}
+@keyframes flicker{25%{transform:scale(1.03,.97) rotate(-1deg)}50%{transform:scale(.98,1.04)}75%{transform:scale(1.02,.98) rotate(1deg)}}
+.fuel{height:12px;border-radius:99px;background:var(--kelp);overflow:hidden;margin-top:10px}
+.fuel span{display:block;height:100%;width:var(--p);background:linear-gradient(90deg,#c9622c,var(--ember))}
+/* Popoli */
+.peoples{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.people{border-top:6px solid var(--c);padding-top:18px}
+.people header{display:flex;gap:14px;align-items:center}.people h3{margin:0;font-size:32px;color:var(--c);line-height:1}
+.people header p{margin:4px 0 0;color:var(--reed);font-size:15px}.people kbd{font-size:15px;color:var(--c)}
+.wins{margin:18px 0 8px}.wins strong{font-size:44px;line-height:1;display:block;letter-spacing:-.02em}
+.strip{display:flex;gap:4px}.strip span{flex:1;height:10px;border-radius:3px;background:rgba(232,241,234,.1)}
+.strip span.won{background:var(--c)}
+.facts{color:var(--reed);font-size:15px}
+.people h4{font-size:15px;font-weight:600;margin:22px 0 8px}
+.moved{list-style:none;margin:0;padding:0}.moved li{display:grid;grid-template-columns:8.5rem 1fr auto;gap:10px;align-items:center;padding:5px 0;font-size:14px}
+.track{position:relative;height:8px;border-radius:9px;background:rgba(232,241,234,.08)}
+.track i{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;transform:translateX(-50%)}
+.track .from{left:calc(var(--s)*100%);box-shadow:inset 0 0 0 2px var(--reed)}
+.track .to{left:calc(var(--s)*100%);background:var(--c);transition:left 1.4s cubic-bezier(.2,.7,.1,1) .2s}
+.seen .track .to{left:calc(var(--n)*100%)}
+.gval{color:var(--reed);font-variant-numeric:tabular-nums}.gval small{font-size:12px}
+/* Albero delle invenzioni */
+.tree-wrap{position:relative;overflow-x:auto;padding-bottom:10px}
+.tree{position:relative;display:grid;grid-template-columns:repeat(5,minmax(230px,1fr));gap:22px;min-width:1150px}
+#links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#links path{fill:none;stroke:var(--ember);stroke-width:2;stroke-dasharray:6 6;opacity:.75}
+.age{position:relative;padding:18px;border-radius:22px;background:linear-gradient(180deg,rgba(23,60,69,.75),rgba(23,60,69,.2))}
+.age h3{margin:0;font-size:22px}.age>p{color:var(--reed);font-size:14px;margin:6px 0 16px;min-height:4.5em}
+.age.now{box-shadow:inset 0 0 0 2px var(--ember)}.age.now h3{color:var(--ember)}
+.age.later{opacity:.55}
+.invs{display:grid;gap:10px}
+.inv{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:600 15px var(--sans);color:var(--foam);
+  background:rgba(10,29,35,.55);border:0;border-radius:40px 14px 14px 40px;padding:6px 14px 6px 6px;cursor:pointer}
+.inv:hover,.inv[aria-expanded="true"]{background:rgba(242,182,90,.14)}
+.token{flex:0 0 52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#0b2026;
+  box-shadow:0 0 0 3px rgba(232,241,234,.08);overflow:hidden;font-size:22px;color:var(--reed)}
+.token img{width:44px;height:44px;object-fit:contain;filter:grayscale(1) brightness(.7) contrast(1.1);transition:filter .3s}
+.inv.found .token{box-shadow:0 0 0 3px var(--owners)}.inv.found .token img,.inv:hover .token img{filter:none}
+.unknown{color:var(--reed);font-style:italic;font-family:var(--serif)}
+.detail{margin-top:18px;padding:18px 20px;border-radius:18px;background:var(--kelp);display:none;max-width:44rem}
+.detail.on{display:block}.detail h3{margin:0 0 6px;font-size:22px}.detail p{margin:4px 0}
+.detail .plus{color:var(--syl)}.detail .minus{color:#f08a7a}.detail small{color:var(--reed)}
+/* Libro */
+.book{background:var(--parch);color:var(--ink);border-radius:6px;padding:48px clamp(20px,6vw,72px);position:relative;
+  box-shadow:inset 0 0 70px rgba(122,74,24,.35)}
+.book h2{color:#7a281c;display:flex;align-items:center;gap:14px}.book h2 img{width:52px}
+.book .sub{color:#6b4a2a}
+.book ol{list-style:none;margin:0;padding:0;max-height:560px;overflow:auto;font:400 19px/1.5 var(--serif)}
+.book li{display:grid;grid-template-columns:7.5rem 1fr;gap:16px;padding:9px 0;border-bottom:1px solid rgba(58,38,20,.16)}
+.book li b{font:600 16px var(--sans);color:#7a281c;font-variant-numeric:tabular-nums}
+/* Giocatori */
+.halls{display:grid;grid-template-columns:1fr 1fr;gap:28px}.halls h3{margin:0 0 10px;font-size:22px}
+.halls ol{margin:0;padding-left:1.4em;color:var(--reed)}.halls li{padding:4px 0}.halls b{color:var(--foam)}
+footer{padding:70px 0 50px;color:var(--reed);font-size:14px}
+@media (max-width:900px){.peoples{grid-template-columns:1fr}.halls{grid-template-columns:1fr}
+  .hero{min-height:960px;align-items:start}.hero .wrap{padding-top:56px}.legend{left:20px;text-align:left}
+  .book li{grid-template-columns:1fr;gap:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style></head><body>
-<header class="hero" style="background-image:url(art/era_istinto.jpg)"><div class="in"><main style="padding:0">
-  <h1>EDEN</h1><p><b>Year 3,744</b> · Age of Instinct</p>
-  <p>Three species evolve on their own, live, 24/7. Their civilization grows only if people play.</p>
-  <a class="btn" href="https://twitch.tv/edenevolutionwars">▶ Watch live on Twitch</a><a class="btn ghost" href="https://www.youtube.com/@edenevolutionwars">YouTube</a>
-</main></div></header>
-<main>
-  <h2>Next age<small>The world advances only if people play: type S, N or R in the Twitch chat</small></h2>
-  <div class="progress"><img src="art/fiamma_civilta.png" alt=""><div style="flex:1"><p>Coming soon: every player who plays in a day feeds the Fire of Civilization. Enough players and the whole world enters the <b>Age of Language</b>.</p></div></div>
-  <h2>The three peoples<small>Wins, species and how their genes changed</small></h2>
-  <div class="factions">
-      <article class="faction" style="--c:#e25252">
-        <img src="art/emblema_ravagers.png" alt="" class="emblem">
-        <h3>Ravagers</h3><p class="role">hunters</p>
-        <p class="big">1,270 <small>years won · 34%</small></p>
-        <p class="label">last 10 years</p><div class="form"><i style="background:#e25252"></i><i></i><i></i><i></i><i style="background:#e25252"></i><i style="background:#e25252"></i><i></i><i style="background:#e25252"></i><i></i><i></i></div>
-        <p class="label">species</p><p>Ravagers · 8 extinct</p>
-        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
-        <p class="label">evolution since the start</p><ul><li>Meat in diet <b>-7%</b></li><li>Speed <b>+5%</b></li><li>Home habitat <b>+4%</b></li></ul>
+<header class="hero">
+  <canvas id="helix" aria-label="The living genome: three strands, one for each people. Each bead is a real gene."></canvas>
+  <div class="wrap"><div class="hero-text">
+    <h1>EDEN</h1>
+    <p class="lede">Three species evolve on their own. Their civilization only grows if you play.</p>
+    <p class="when">Year 3,745, the Age of Instinct. Live 24/7 on a Raspberry Pi.</p>
+    <div class="play"><span class="keys" aria-label="Type S, N or R in the Twitch chat"><kbd>S</kbd><kbd>N</kbd><kbd>R</kbd></span>
+      <a class="btn" href="https://twitch.tv/edenevolutionwars">Play on Twitch</a><a class="btn quiet" href="https://www.youtube.com/@edenevolutionwars">Watch the story on YouTube</a></div>
+  </div></div>
+  <p class="legend">This is their real genome, right now. Each bead is a gene: the bigger it is, the stronger the gene. The faint ring is where the first founders started.</p>
+  <div class="tip" id="tip" role="status"></div>
+</header>
+<main class="wrap">
+  <section class="block" aria-labelledby="next">
+    <h2 id="next">The next age</h2>
+    <p class="sub">The animals evolve by themselves. Culture needs you: every player who joins in a day feeds the Fire of Civilization.</p>
+    <div class="age-next"><img class="flame" src="art/fiamma_civilta.png" alt="">
+      <div><p>The fire is being lit. Soon every player will add fuel, and enough of them will carry the world into the Age of Language.</p><div class='fuel' style='--p:4%'><span></span></div></div></div>
+  </section>
+  <section class="block" aria-labelledby="peoples">
+    <h2 id="peoples">The three peoples</h2>
+    <p class="sub">Who is winning, and how their bodies changed after thousands of years.</p>
+    <div class="peoples">
+      <article class="people" style="--c:#e25252">
+        <header><img src="art/emblema_ravagers.png" alt="" width="72" height="72">
+          <div><h3>Ravagers</h3><p>the hunters. Type <kbd>R</kbd> to join them.</p></div></header>
+        <p class="wins"><strong>1,270</strong> years won, 34% of all history</p>
+        <div class="strip" aria-label="last 12 years, filled when they won"><span class="won"></span><span class="won"></span><span class=""></span><span class=""></span><span class=""></span><span class="won"></span><span class="won"></span><span class=""></span><span class="won"></span><span class=""></span><span class=""></span><span class=""></span></div>
+        <p class="facts">Living species: Ravagers. 8 gone extinct.
+        Many are swimmers, climbers, burrowers, pack hunters.</p>
+        <h4>How they changed since the first founders</h4><ul class="moved">
+          <li><span class="gname">Meat in diet</span>
+            <span class="track" style="--s:0.800;--n:0.746"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">0.80 <small>to</small> 0.75</span></li>
+          <li><span class="gname">Speed</span>
+            <span class="track" style="--s:0.533;--n:0.571"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">139 <small>to</small> 146</span></li>
+          <li><span class="gname">Energy efficiency</span>
+            <span class="track" style="--s:0.432;--n:0.454"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">1.12 <small>to</small> 1.15</span></li>
+          <li><span class="gname">Body size</span>
+            <span class="track" style="--s:0.420;--n:0.437"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">7.20 <small>to</small> 7.37</span></li></ul>
       </article>
-      <article class="faction" style="--c:#49bfda">
-        <img src="art/emblema_nomads.png" alt="" class="emblem">
-        <h3>Nomads</h3><p class="role">fast explorers</p>
-        <p class="big">1,266 <small>years won · 34%</small></p>
-        <p class="label">last 10 years</p><div class="form"><i></i><i style="background:#49bfda"></i><i style="background:#49bfda"></i><i style="background:#49bfda"></i><i></i><i></i><i style="background:#49bfda"></i><i></i><i style="background:#49bfda"></i><i style="background:#49bfda"></i></div>
-        <p class="label">species</p><p>Sparse Nomads · 5 extinct</p>
-        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
-        <p class="label">evolution since the start</p><ul><li>Speed <b>+5%</b></li><li>Energy efficiency <b>+4%</b></li><li>Camouflage <b>-4%</b></li></ul>
+      <article class="people" style="--c:#49bfda">
+        <header><img src="art/emblema_nomads.png" alt="" width="72" height="72">
+          <div><h3>Nomads</h3><p>the fast explorers. Type <kbd>N</kbd> to join them.</p></div></header>
+        <p class="wins"><strong>1,267</strong> years won, 34% of all history</p>
+        <div class="strip" aria-label="last 12 years, filled when they won"><span class=""></span><span class=""></span><span class="won"></span><span class="won"></span><span class="won"></span><span class=""></span><span class=""></span><span class="won"></span><span class=""></span><span class="won"></span><span class="won"></span><span class="won"></span></div>
+        <p class="facts">Living species: Sparse Nomads. 5 gone extinct.
+        Many are swimmers, climbers, burrowers, pack hunters.</p>
+        <h4>How they changed since the first founders</h4><ul class="moved">
+          <li><span class="gname">Speed</span>
+            <span class="track" style="--s:0.615;--n:0.657"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">155 <small>to</small> 163</span></li>
+          <li><span class="gname">Energy efficiency</span>
+            <span class="track" style="--s:0.497;--n:0.529"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">1.22 <small>to</small> 1.27</span></li>
+          <li><span class="gname">Body size</span>
+            <span class="track" style="--s:0.220;--n:0.238"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">5.20 <small>to</small> 5.38</span></li>
+          <li><span class="gname">Camouflage</span>
+            <span class="track" style="--s:0.430;--n:0.413"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">0.43 <small>to</small> 0.41</span></li></ul>
       </article>
-      <article class="faction" style="--c:#5dca79">
-        <img src="art/emblema_sylvans.png" alt="" class="emblem">
-        <h3>Sylvans</h3><p class="role">plant eaters</p>
-        <p class="big">1,207 <small>years won · 32%</small></p>
-        <p class="label">last 10 years</p><div class="form"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <p class="label">species</p><p>Sylvans · 4 extinct</p>
-        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
-        <p class="label">evolution since the start</p><ul><li>Speed <b>+9%</b></li><li>Burrowing <b>+2%</b></li><li>Camouflage <b>-2%</b></li></ul>
+      <article class="people" style="--c:#5dca79">
+        <header><img src="art/emblema_sylvans.png" alt="" width="72" height="72">
+          <div><h3>Sylvans</h3><p>the plant eaters. Type <kbd>S</kbd> to join them.</p></div></header>
+        <p class="wins"><strong>1,207</strong> years won, 32% of all history</p>
+        <div class="strip" aria-label="last 12 years, filled when they won"><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span><span class=""></span></div>
+        <p class="facts">Living species: Sylvans. 4 gone extinct.
+        Many are swimmers, climbers, burrowers, pack hunters.</p>
+        <h4>How they changed since the first founders</h4><ul class="moved">
+          <li><span class="gname">Speed</span>
+            <span class="track" style="--s:0.410;--n:0.463"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">115 <small>to</small> 125</span></li>
+          <li><span class="gname">Energy efficiency</span>
+            <span class="track" style="--s:0.787;--n:0.766"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">1.67 <small>to</small> 1.64</span></li>
+          <li><span class="gname">Stamina</span>
+            <span class="track" style="--s:0.577;--n:0.594"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">1.25 <small>to</small> 1.27</span></li>
+          <li><span class="gname">Camouflage</span>
+            <span class="track" style="--s:0.770;--n:0.753"><i class="from"></i><i class="to"></i></span>
+            <span class="gval">0.77 <small>to</small> 0.75</span></li></ul>
       </article></div>
-  <h2>Tree of inventions<small>Not written in advance: each people invents from what it suffers, with a part of chance.
-  Grey = not discovered yet · the colored dot shows who discovered it</small></h2>
-  <div class="tree">
-        <section class="era now">
-          <h3><small>Age 1</small>Age of Instinct</h3>
-          <p class="era-story">Only instinct. Small discoveries to survive cold, hunger and hunters.</p>
-          
-          <div class="node">
-            <div class="icon"><img src="art/inv_fuoco.png" alt=""></div>
-            <div><b>Fire</b><span class="need">Cold</span>
-            
-            <p>+ less energy lost in winter near the nest<br>&minus; hunters see it from far away</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_tane_profonde.png" alt=""></div>
-            <div><b>Deep Burrows</b><span class="need">Cold</span>
-            
-            <p>+ safe underground in winter<br>&minus; slower to move</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_pelliccia_condivisa.png" alt=""></div>
-            <div><b>Shared Fur</b><span class="need">Cold</span>
-            
-            <p>+ less cold when they stay together<br>&minus; diseases spread faster</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_scorte.png" alt=""></div>
-            <div><b>Food Stores</b><span class="need">Hunger</span>
-            
-            <p>+ food in the nest lasts longer<br>&minus; stores attract raids</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_raccolta_gruppo.png" alt=""></div>
-            <div><b>Group Foraging</b><span class="need">Hunger</span>
-            
-            <p>+ they find food further away<br>&minus; cubs are left alone</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_cammino_acqua.png" alt=""></div>
-            <div><b>Path to Water</b><span class="need">Thirst</span>
-            
-            <p>+ faster to the water<br>&minus; hunters learn the path</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_mimetismo.png" alt=""></div>
-            <div><b>Group Camouflage</b><span class="need">Hunters</span>
-            
-            <p>+ hide better in the forest<br>&minus; slower outside the forest</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_zattere.png" alt=""></div>
-            <div><b>Rafts</b><span class="need">Hunters</span>
-            
-            <p>+ escape on the water<br>&minus; need lakes nearby</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><img src="art/inv_erbe_medicinali.png" alt=""></div>
-            <div><b>Healing Herbs</b><span class="need">Disease</span>
-            
-            <p>+ the sick heal faster<br>&minus; less time to look for food</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Expert Swimmers</b><span class="need">Water</span>
-            
-            <p>+ faster in the water<br>&minus; tire sooner on land</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-        </section>
-        <section class="era future">
-          <h3><small>Age 2</small>Age of Language</h3>
-          <p class="era-story">The factions start to talk: tribes with names, leaders and traditions passed to the young.</p>
-          
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Alarm Calls</b><span class="need">Hunters</span>
-            
-            <p>+ sentinels warn the group<br>&minus; sentinels eat less</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Coordinated Foraging</b><span class="need">Hunger</span>
-            
-            <p>+ more food in groups<br>&minus; the weak stay behind</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>New Tribe</b><span class="need">Crowding</span>
-            
-            <p>+ half the group founds a new named nest<br>&minus; two nests to defend</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Quarantine</b><span class="need">Disease</span>
-            
-            <p>+ the sick move away, fewer infections<br>&minus; the sick die alone more often</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Traditions</b><span class="need">Any</span>
-            
-            <p>+ the young copy a habit of the elders<br>&minus; a bad habit is passed on too</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Cooking</b><span class="need">Hunger</span>
-            <span class="req">needs Fire</span>
-            <p>+ food gives more energy<br>&minus; fires to keep alive</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Torches</b><span class="need">Hunters</span>
-            <span class="req">needs Fire</span>
-            <p>+ hunters flee at night<br>&minus; everyone sees you coming</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Tunnels</b><span class="need">Crowding</span>
-            <span class="req">needs Deep Burrows</span>
-            <p>+ move underground between two nests<br>&minus; collapses in floods</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Raft Fishing</b><span class="need">Hunger</span>
-            <span class="req">needs Rafts</span>
-            <p>+ food from the water<br>&minus; rafts get lost in storms</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-          <div class="node">
-            <div class="icon"><span class="q">?</span></div>
-            <div><b>Healers</b><span class="need">Disease</span>
-            <span class="req">needs Healing Herbs</span>
-            <p>+ one creature heals the others<br>&minus; the healer gets sick often</p>
-            <div class="owners"><em>not discovered yet</em></div></div>
-          </div>
-        </section>
-        <section class="era future">
-          <h3><small>Age 3</small>Age of Villages</h3>
-          <p class="era-story">Farming, wells and palisades: nests become villages.</p>
-          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
-        </section>
-        <section class="era future">
-          <h3><small>Age 4</small>Age of Crafts</h3>
-          <p class="era-story">Tools, defenses and boats.</p>
-          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
-        </section>
-        <section class="era future">
-          <h3><small>Age 5</small>Age of Trade and War</h3>
-          <p class="era-story">Trade, alliances and wars between tribes.</p>
-          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
-        </section></div>
-  <h2 style="text-align:center">&nbsp;</h2>
-  <section class="book"><h2><img src="art/icona_libro.png" alt="">The Book of EDEN</h2><ol><li><b>Year 3,723</b> · The Nomads are extinct</li><li><b>Year 3,722</b> · A new species is born: Sparse Nomads</li><li><b>Year 3,478</b> · The Bright Nomads are extinct</li><li><b>Year 3,391</b> · The Sparse Sylvans are extinct</li><li><b>Year 3,390</b> · A new species is born: Sparse Sylvans</li><li><b>Year 3,123</b> · The Sparse Ravagers are extinct</li><li><b>Year 2,641</b> · The Sparse Sylvans are extinct</li><li><b>Year 2,636</b> · A new species is born: Sparse Sylvans</li><li><b>Year 2,614</b> · A new species is born: Sparse Ravagers</li><li><b>Year 2,387</b> · The Grazing Ravagers are extinct</li><li><b>Year 2,222</b> · The Fierce Ravagers are extinct</li><li><b>Year 2,222</b> · A new species is born: Grazing Ravagers</li><li><b>Year 2,164</b> · A new species is born: Bright Nomads</li><li><b>Year 2,162</b> · The Sparse Nomads are extinct</li><li><b>Year 2,025</b> · The Desert Ravagers are extinct</li><li><b>Year 2,024</b> · A new species is born: Desert Ravagers</li><li><b>Year 1,921</b> · The Long-lived Nomads are extinct</li><li><b>Year 1,918</b> · A new species is born: Long-lived Nomads</li><li><b>Year 1,873</b> · The Dim-eyed Nomads are extinct</li><li><b>Year 1,872</b> · A new species is born: Dim-eyed Nomads</li><li><b>Year 1,858</b> · The Pack Ravagers are extinct</li><li><b>Year 1,856</b> · A new species is born: Pack Ravagers</li><li><b>Year 1,765</b> · A new species is born: Fierce Ravagers</li><li><b>Year 1,764</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,569</b> · A new species is born: Sparse Ravagers</li><li><b>Year 1,542</b> · A new species is born: Sparse Nomads</li><li><b>Year 1,301</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,292</b> · A new species is born: Sparse Ravagers</li><li><b>Year 1,136</b> · The Swimming Sylvans are extinct</li><li><b>Year 1,019</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,011</b> · A new species is born: Sparse Ravagers</li><li><b>Year 817</b> · A new species is born: Swimming Sylvans</li><li><b>Year 816</b> · The Sparse Sylvans are extinct</li><li><b>Year 786</b> · A new species is born: Sparse Sylvans</li></ol></section>
-  <h2>Players<small>Support your people: type S, N or R and a creature with your name joins them</small></h2>
-  
-      <div class="cols"><div><h3>Hall of Fame</h3><ol><li><b>10-18 → 10-25</b> truewormshow 270 · paddel_pat 200 · xjustinjx 200</li></ol></div>
-      <div><h3>Longest family lines</h3><ol><li>vortex3636 <b>gen 29</b></li><li>thknhry <b>gen 25</b></li><li>ramkiller2142 <b>gen 24</b></li><li>tytoons <b>gen 23</b></li><li>thburninator <b>gen 23</b></li><li>zebthetall <b>gen 23</b></li><li>tommogotchi <b>gen 20</b></li><li>cizzop <b>gen 20</b></li></ol></div></div>
-  <footer>Updated 2026-10-29 13:10 UTC · data from the live sim on a Raspberry Pi 5 ·
-  <a href="https://twitch.tv/edenevolutionwars">twitch.tv/edenevolutionwars</a></footer>
-</main></body></html>
+  </section>
+  <section class="block" aria-labelledby="tree">
+    <h2 id="tree">Tree of inventions</h2>
+    <p class="sub">Nothing here is written in advance. Each people invents from what it suffers, with a part of chance. Grey means nobody has found it yet. Tap one to read it.</p>
+    <div class="tree-wrap"><div class="tree" id="treegrid"><svg id="links" aria-hidden="true"></svg>
+        <section class="age now"><h3>Age of Instinct</h3><p>Only instinct. Small discoveries to survive cold, hunger and hunters.</p>
+          <div class="invs">
+          <button class="inv" id="inv-fire" data-need="Cold"
+            data-gain="less energy lost in winter near the nest" data-cost="hunters see it from far away" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_fuoco.png" alt=""></span><span class="iname">Fire</span></button>
+          <button class="inv" id="inv-burrows" data-need="Cold"
+            data-gain="safe underground in winter" data-cost="slower to move" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_tane_profonde.png" alt=""></span><span class="iname">Deep Burrows</span></button>
+          <button class="inv" id="inv-huddle" data-need="Cold"
+            data-gain="less cold when they stay together" data-cost="diseases spread faster" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_pelliccia_condivisa.png" alt=""></span><span class="iname">Shared Fur</span></button>
+          <button class="inv" id="inv-stores" data-need="Hunger"
+            data-gain="food in the nest lasts longer" data-cost="stores attract raids" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_scorte.png" alt=""></span><span class="iname">Food Stores</span></button>
+          <button class="inv" id="inv-foraging" data-need="Hunger"
+            data-gain="they find food further away" data-cost="cubs are left alone" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_raccolta_gruppo.png" alt=""></span><span class="iname">Group Foraging</span></button>
+          <button class="inv" id="inv-water_path" data-need="Thirst"
+            data-gain="faster to the water" data-cost="hunters learn the path" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_cammino_acqua.png" alt=""></span><span class="iname">Path to Water</span></button>
+          <button class="inv" id="inv-camouflage" data-need="Hunters"
+            data-gain="hide better in the forest" data-cost="slower outside the forest" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_mimetismo.png" alt=""></span><span class="iname">Group Camouflage</span></button>
+          <button class="inv" id="inv-rafts" data-need="Hunters"
+            data-gain="escape on the water" data-cost="need lakes nearby" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_zattere.png" alt=""></span><span class="iname">Rafts</span></button>
+          <button class="inv" id="inv-herbs" data-need="Disease"
+            data-gain="the sick heal faster" data-cost="less time to look for food" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><img src="art/inv_erbe_medicinali.png" alt=""></span><span class="iname">Healing Herbs</span></button>
+          <button class="inv" id="inv-swimmers" data-need="Water"
+            data-gain="faster in the water" data-cost="tire sooner on land" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Expert Swimmers</span></button></div></section>
+        <section class="age later"><h3>Age of Language</h3><p>The factions start to talk: tribes with names, leaders and traditions passed to the young.</p>
+          <div class="invs">
+          <button class="inv" id="inv-alarm" data-need="Hunters"
+            data-gain="sentinels warn the group" data-cost="sentinels eat less" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Alarm Calls</span></button>
+          <button class="inv" id="inv-coordinated" data-need="Hunger"
+            data-gain="more food in groups" data-cost="the weak stay behind" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Coordinated Foraging</span></button>
+          <button class="inv" id="inv-new_tribe" data-need="Crowding"
+            data-gain="half the group founds a new named nest" data-cost="two nests to defend" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">New Tribe</span></button>
+          <button class="inv" id="inv-quarantine" data-need="Disease"
+            data-gain="the sick move away, fewer infections" data-cost="the sick die alone more often" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Quarantine</span></button>
+          <button class="inv" id="inv-traditions" data-need="Any need"
+            data-gain="the young copy a habit of the elders" data-cost="a bad habit is passed on too" data-who="nobody yet"
+            data-req="" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Traditions</span></button>
+          <button class="inv" id="inv-cooking" data-need="Hunger"
+            data-gain="food gives more energy" data-cost="fires to keep alive" data-who="nobody yet"
+            data-req="Fire" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Cooking</span></button>
+          <button class="inv" id="inv-torches" data-need="Hunters"
+            data-gain="hunters flee at night" data-cost="everyone sees you coming" data-who="nobody yet"
+            data-req="Fire" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Torches</span></button>
+          <button class="inv" id="inv-tunnels" data-need="Crowding"
+            data-gain="move underground between two nests" data-cost="collapses in floods" data-who="nobody yet"
+            data-req="Deep Burrows" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Tunnels</span></button>
+          <button class="inv" id="inv-raft_fishing" data-need="Hunger"
+            data-gain="food from the water" data-cost="rafts get lost in storms" data-who="nobody yet"
+            data-req="Rafts" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Raft Fishing</span></button>
+          <button class="inv" id="inv-healers" data-need="Disease"
+            data-gain="one creature heals the others" data-cost="the healer gets sick often" data-who="nobody yet"
+            data-req="Healing Herbs" style="--owners:transparent">
+            <span class="token"><span aria-hidden="true">?</span></span><span class="iname">Healers</span></button></div></section>
+        <section class="age later"><h3>Age of Villages</h3><p>Farming, wells and palisades: nests become villages.</p>
+          <div class="invs"><p class="unknown">Its inventions appear when the world gets here.</p></div></section>
+        <section class="age later"><h3>Age of Crafts</h3><p>Tools, defenses and boats.</p>
+          <div class="invs"><p class="unknown">Its inventions appear when the world gets here.</p></div></section>
+        <section class="age later"><h3>Age of Trade and War</h3><p>Trade, alliances and wars between tribes.</p>
+          <div class="invs"><p class="unknown">Its inventions appear when the world gets here.</p></div></section></div></div>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </section>
+  <section class="block" aria-labelledby="book">
+    <div class="book"><h2 id="book"><img src="art/icona_libro.png" alt="">The Book of EDEN</h2>
+      <p class="sub">What happened, year by year. Written by the world itself, and sometimes by its keeper.</p>
+      <ol><li><b>Year 3,723</b><span>The Nomads disappear.</span></li><li><b>Year 3,722</b><span>A new species is born: the Sparse Nomads.</span></li><li><b>Year 3,478</b><span>The Bright Nomads disappear.</span></li><li><b>Year 3,391</b><span>The Sparse Sylvans disappear.</span></li><li><b>Year 3,390</b><span>A new species is born: the Sparse Sylvans.</span></li><li><b>Year 3,123</b><span>The Sparse Ravagers disappear.</span></li><li><b>Year 2,641</b><span>The Sparse Sylvans disappear.</span></li><li><b>Year 2,636</b><span>A new species is born: the Sparse Sylvans.</span></li><li><b>Year 2,614</b><span>A new species is born: the Sparse Ravagers.</span></li><li><b>Year 2,387</b><span>The Grazing Ravagers disappear.</span></li><li><b>Year 2,222</b><span>The Fierce Ravagers disappear.</span></li><li><b>Year 2,222</b><span>A new species is born: the Grazing Ravagers.</span></li><li><b>Year 2,164</b><span>A new species is born: the Bright Nomads.</span></li><li><b>Year 2,162</b><span>The Sparse Nomads disappear.</span></li><li><b>Year 2,025</b><span>The Desert Ravagers disappear.</span></li><li><b>Year 2,024</b><span>A new species is born: the Desert Ravagers.</span></li><li><b>Year 1,921</b><span>The Long-lived Nomads disappear.</span></li><li><b>Year 1,918</b><span>A new species is born: the Long-lived Nomads.</span></li><li><b>Year 1,873</b><span>The Dim-eyed Nomads disappear.</span></li><li><b>Year 1,872</b><span>A new species is born: the Dim-eyed Nomads.</span></li><li><b>Year 1,858</b><span>The Pack Ravagers disappear.</span></li><li><b>Year 1,856</b><span>A new species is born: the Pack Ravagers.</span></li><li><b>Year 1,765</b><span>A new species is born: the Fierce Ravagers.</span></li><li><b>Year 1,764</b><span>The Sparse Ravagers disappear.</span></li><li><b>Year 1,569</b><span>A new species is born: the Sparse Ravagers.</span></li><li><b>Year 1,542</b><span>A new species is born: the Sparse Nomads.</span></li><li><b>Year 1,301</b><span>The Sparse Ravagers disappear.</span></li><li><b>Year 1,292</b><span>A new species is born: the Sparse Ravagers.</span></li><li><b>Year 1,136</b><span>The Swimming Sylvans disappear.</span></li><li><b>Year 1,019</b><span>The Sparse Ravagers disappear.</span></li><li><b>Year 1,011</b><span>A new species is born: the Sparse Ravagers.</span></li><li><b>Year 817</b><span>A new species is born: the Swimming Sylvans.</span></li><li><b>Year 816</b><span>The Sparse Sylvans disappear.</span></li><li><b>Year 786</b><span>A new species is born: the Sparse Sylvans.</span></li></ol></div>
+  </section>
+  <section class="block" aria-labelledby="players">
+    <h2 id="players">Players</h2>
+    <p class="sub">Type S, N or R and a creature with your name joins that people. Its children carry your name.</p>
+    
+      <div class="halls"><div><h3>Hall of Fame</h3><ol><li><span>Week of 10/18</span> <b>truewormshow</b> 270, <b>paddel_pat</b> 200, <b>xjustinjx</b> 200</li></ol></div>
+      <div><h3>Longest family lines</h3><ol><li><b>vortex3636</b> reached generation 29</li><li><b>thknhry</b> reached generation 25</li><li><b>ramkiller2142</b> reached generation 24</li><li><b>tytoons</b> reached generation 23</li><li><b>thburninator</b> reached generation 23</li><li><b>zebthetall</b> reached generation 23</li><li><b>tommogotchi</b> reached generation 20</li><li><b>cizzop</b> reached generation 20</li></ol></div></div>
+  </section>
+  <footer>Updated 29 October 2026, 13:13 UTC from the live world. <a href="https://twitch.tv/edenevolutionwars">twitch.tv/edenevolutionwars</a></footer>
+</main>
+<script>
+const GENOME = [{"key": "speed", "name": "Speed", "f": {"Ravagers": {"now": 146.251, "start": 139.0, "n": 0.571, "s": 0.533}, "Nomads": {"now": 163.059, "start": 155.0, "n": 0.657, "s": 0.615}, "Sylvans": {"now": 125.312, "start": 115.0, "n": 0.463, "s": 0.41}}}, {"key": "vision", "name": "Vision", "f": {"Ravagers": {"now": 183.699, "start": 185.0, "n": 0.504, "s": 0.508}, "Nomads": {"now": 185.417, "start": 185.0, "n": 0.51, "s": 0.508}, "Sylvans": {"now": 178.256, "start": 175.0, "n": 0.486, "s": 0.475}}}, {"key": "size", "name": "Body size", "f": {"Ravagers": {"now": 7.371, "start": 7.2, "n": 0.437, "s": 0.42}, "Nomads": {"now": 5.381, "start": 5.2, "n": 0.238, "s": 0.22}, "Sylvans": {"now": 5.62, "start": 5.5, "n": 0.262, "s": 0.25}}}, {"key": "efficiency", "name": "Energy efficiency", "f": {"Ravagers": {"now": 1.153, "start": 1.12, "n": 0.454, "s": 0.432}, "Nomads": {"now": 1.269, "start": 1.22, "n": 0.529, "s": 0.497}, "Sylvans": {"now": 1.638, "start": 1.67, "n": 0.766, "s": 0.787}}}, {"key": "fertility", "name": "Fertility", "f": {"Ravagers": {"now": 1.096, "start": 1.08, "n": 0.479, "s": 0.467}, "Nomads": {"now": 1.125, "start": 1.12, "n": 0.5, "s": 0.496}, "Sylvans": {"now": 1.367, "start": 1.37, "n": 0.679, "s": 0.681}}}, {"key": "strength", "name": "Strength", "f": {"Ravagers": {"now": 1.668, "start": 1.65, "n": 0.793, "s": 0.781}, "Nomads": {"now": 0.971, "start": 0.98, "n": 0.357, "s": 0.362}, "Sylvans": {"now": 0.958, "start": 0.96, "n": 0.349, "s": 0.35}}}, {"key": "stamina", "name": "Stamina", "f": {"Ravagers": {"now": 1.196, "start": 1.2, "n": 0.535, "s": 0.538}, "Nomads": {"now": 1.528, "start": 1.52, "n": 0.791, "s": 0.785}, "Sylvans": {"now": 1.272, "start": 1.25, "n": 0.594, "s": 0.577}}}, {"key": "aggression", "name": "Aggression", "f": {"Ravagers": {"now": 0.871, "start": 0.87, "n": 0.871, "s": 0.87}, "Nomads": {"now": 0.174, "start": 0.19, "n": 0.174, "s": 0.19}, "Sylvans": {"now": 0.11, "start": 0.1, "n": 0.11, "s": 0.1}}}, {"key": "camouflage", "name": "Camouflage", "f": {"Ravagers": {"now": 0.262, "start": 0.27, "n": 0.262, "s": 0.27}, "Nomads": {"now": 0.413, "start": 0.43, "n": 0.413, "s": 0.43}, "Sylvans": {"now": 0.753, "start": 0.77, "n": 0.753, "s": 0.77}}}, {"key": "immunity", "name": "Immunity", "f": {"Ravagers": {"now": 1.033, "start": 1.04, "n": 0.41, "s": 0.415}, "Nomads": {"now": 1.094, "start": 1.08, "n": 0.457, "s": 0.446}, "Sylvans": {"now": 1.267, "start": 1.27, "n": 0.59, "s": 0.592}}}, {"key": "longevity", "name": "Lifespan", "f": {"Ravagers": {"now": 0.921, "start": 0.92, "n": 0.292, "s": 0.291}, "Nomads": {"now": 1.062, "start": 1.06, "n": 0.42, "s": 0.418}, "Sylvans": {"now": 1.214, "start": 1.22, "n": 0.559, "s": 0.564}}}, {"key": "display", "name": "Courtship display", "f": {"Ravagers": {"now": 1.142, "start": 1.14, "n": 0.651, "s": 0.65}, "Nomads": {"now": 0.996, "start": 0.98, "n": 0.56, "s": 0.55}, "Sylvans": {"now": 0.882, "start": 0.89, "n": 0.489, "s": 0.494}}}, {"key": "diet", "name": "Meat in diet", "f": {"Ravagers": {"now": 0.746, "start": 0.8, "n": 0.746, "s": 0.8}, "Nomads": {"now": 0.175, "start": 0.18, "n": 0.175, "s": 0.18}, "Sylvans": {"now": 0.088, "start": 0.09, "n": 0.088, "s": 0.09}}}, {"key": "habitat", "name": "Home habitat", "f": {"Ravagers": {"now": 0.472, "start": 0.45, "n": 0.236, "s": 0.225}, "Nomads": {"now": 0.364, "start": 0.35, "n": 0.182, "s": 0.175}, "Sylvans": {"now": 0.984, "start": 1.0, "n": 0.492, "s": 0.5}}}, {"key": "fur", "name": "Fur", "f": {"Ravagers": {"now": 0.511, "start": 0.5, "n": 0.511, "s": 0.5}, "Nomads": {"now": 0.506, "start": 0.5, "n": 0.506, "s": 0.5}, "Sylvans": {"now": 0.494, "start": 0.5, "n": 0.494, "s": 0.5}}}, {"key": "fat", "name": "Fat", "f": {"Ravagers": {"now": 0.495, "start": 0.5, "n": 0.495, "s": 0.5}, "Nomads": {"now": 0.494, "start": 0.5, "n": 0.494, "s": 0.5}, "Sylvans": {"now": 0.505, "start": 0.5, "n": 0.505, "s": 0.5}}}, {"key": "drought", "name": "Thirst resistance", "f": {"Ravagers": {"now": 0.509, "start": 0.5, "n": 0.509, "s": 0.5}, "Nomads": {"now": 0.497, "start": 0.5, "n": 0.497, "s": 0.5}, "Sylvans": {"now": 0.485, "start": 0.5, "n": 0.485, "s": 0.5}}}, {"key": "swim", "name": "Swimming", "f": {"Ravagers": {"now": 0.506, "start": 0.5, "n": 0.506, "s": 0.5}, "Nomads": {"now": 0.509, "start": 0.5, "n": 0.509, "s": 0.5}, "Sylvans": {"now": 0.499, "start": 0.5, "n": 0.499, "s": 0.5}}}, {"key": "torpor", "name": "Hibernation", "f": {"Ravagers": {"now": 0.509, "start": 0.5, "n": 0.509, "s": 0.5}, "Nomads": {"now": 0.51, "start": 0.5, "n": 0.51, "s": 0.5}, "Sylvans": {"now": 0.484, "start": 0.5, "n": 0.484, "s": 0.5}}}, {"key": "climb", "name": "Climbing", "f": {"Ravagers": {"now": 0.493, "start": 0.5, "n": 0.493, "s": 0.5}, "Nomads": {"now": 0.513, "start": 0.5, "n": 0.513, "s": 0.5}, "Sylvans": {"now": 0.502, "start": 0.5, "n": 0.502, "s": 0.5}}}, {"key": "burrow", "name": "Burrowing", "f": {"Ravagers": {"now": 0.494, "start": 0.5, "n": 0.494, "s": 0.5}, "Nomads": {"now": 0.505, "start": 0.5, "n": 0.505, "s": 0.5}, "Sylvans": {"now": 0.513, "start": 0.5, "n": 0.513, "s": 0.5}}}, {"key": "pack", "name": "Pack instinct", "f": {"Ravagers": {"now": 0.488, "start": 0.5, "n": 0.488, "s": 0.5}, "Nomads": {"now": 0.487, "start": 0.5, "n": 0.487, "s": 0.5}, "Sylvans": {"now": 0.505, "start": 0.5, "n": 0.505, "s": 0.5}}}], LINKS = [["fire", "cooking"], ["fire", "torches"], ["burrows", "tunnels"], ["rafts", "raft_fishing"], ["herbs", "healers"]];
+const COLORS = {Ravagers:"#e25252", Nomads:"#49bfda", Sylvans:"#5dca79"}, ORDER = ["Ravagers","Nomads","Sylvans"];
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* Il genoma vivo: tre fili che ruotano; le perle sono geni veri */
+(() => {
+  const cv = document.getElementById("helix"), ctx = cv.getContext("2d"), tip = document.getElementById("tip");
+  if (!GENOME.length) return;
+  let W = 0, H = 0, dpr = 1, t0 = performance.now(), spin = 0, boost = 0, mx = .5, my = .5, hover = -1, running = true;
+  const seeds = GENOME.map(() => ORDER.map(() => [Math.random(), Math.random()]));
+  function size() { dpr = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function layout() {
+    const narrow = W < 900, x0 = narrow ? 24 : W * .44, x1 = W - (narrow ? 24 : 48);
+    const cy = narrow ? H - 250 : H * .5, amp = narrow ? 120 : Math.min(H * .27, 190);
+    return {x0, x1, cy, amp};
+  }
+  const ease = p => 1 - Math.pow(1 - p, 3);
+  function frame(now) {
+    if (!running) return;
+    const el = (now - t0) / 1000, intro = still ? 1 : Math.min(1, el / 2.2);
+    spin += still ? 0 : (0.004 + boost) ; boost *= .94;
+    const {x0, x1, cy, amp} = layout(), n = GENOME.length;
+    ctx.clearRect(0, 0, W, H);
+    const tilt = (mx - .5) * .8, pts = [];
+    GENOME.forEach((g, i) => {
+      const x = x0 + (x1 - x0) * i / (n - 1);
+      pts.push(ORDER.map((f, k) => {
+        const a = i * .42 + spin + k * 2 * Math.PI / 3 + tilt;
+        const z = Math.cos(a), y = cy + Math.sin(a) * amp * (1 + (my - .5) * .3);
+        const p = Math.max(0, Math.min(1, intro * 1.6 - (seeds[i][k][0] * .6)));
+        const e = ease(p), sx = seeds[i][k][0] * W, sy = seeds[i][k][1] * H;
+        return {x: sx + (x - sx) * e, y: sy + (y - sy) * e, z, f, g: g.f[f], a: e};
+      }));
+    });
+    // fili morbidi: la stessa curva delle perle, campionata fitta; piu' chiari davanti, scuri dietro
+    if (intro > .55) ORDER.forEach((f, k) => {
+      const steps = (n - 1) * 8;
+      for (let s = 0; s < steps; s++) {
+        const u0 = s / 8, u1 = (s + 1) / 8, seg = [u0, u1].map(u => {
+          const a = u * .42 + spin + k * 2 * Math.PI / 3 + tilt;
+          return [x0 + (x1 - x0) * u / (n - 1), cy + Math.sin(a) * amp * (1 + (my - .5) * .3), Math.cos(a)];
+        });
+        ctx.globalAlpha = Math.min(1, (intro - .55) / .45) * (.12 + .5 * (seg[0][2] + 1) / 2);
+        ctx.beginPath(); ctx.moveTo(seg[0][0], seg[0][1]); ctx.lineTo(seg[1][0], seg[1][1]);
+        ctx.strokeStyle = COLORS[f]; ctx.lineWidth = 1.5 + 1.5 * (seg[0][2] + 1) / 2; ctx.stroke();
+      }
+    });
+    ctx.globalAlpha = 1;
+    pts.forEach((col, i) => {
+      ctx.beginPath(); col.forEach((q, k) => k ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath();
+      ctx.strokeStyle = i === hover ? "rgba(242,182,90,.9)" : "rgba(232,241,234,.08)"; ctx.lineWidth = i === hover ? 2 : 1; ctx.stroke();
+    });
+    const beads = pts.flatMap((col, i) => col.map(q => ({...q, i}))).sort((a, b) => a.z - b.z);
+    beads.forEach(q => {
+      const depth = .62 + .38 * (q.z + 1) / 2, r = (4 + q.g.n * 15) * depth, r0 = (4 + q.g.s * 15) * depth;
+      ctx.globalAlpha = q.a * (.35 + .65 * (q.z + 1) / 2);
+      ctx.beginPath(); ctx.arc(q.x, q.y, r0, 0, 7); ctx.strokeStyle = "rgba(232,241,234,.35)"; ctx.lineWidth = 1; ctx.stroke();
+      const grad = ctx.createRadialGradient(q.x - r * .35, q.y - r * .35, r * .1, q.x, q.y, r);
+      grad.addColorStop(0, "#ffffffcc"); grad.addColorStop(.25, COLORS[q.f]); grad.addColorStop(1, COLORS[q.f] + "66");
+      ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fillStyle = grad; ctx.fill();
+      if (q.i === hover) { ctx.lineWidth = 2; ctx.strokeStyle = "#f2b65a"; ctx.stroke(); }
+    });
+    ctx.globalAlpha = 1;
+    cv._pts = pts;
+    requestAnimationFrame(frame);
+  }
+  function pick(ev) {
+    const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    mx = x / r.width; my = y / r.height;
+    let best = -1, bd = 1e9;
+    (cv._pts || []).forEach((col, i) => col.forEach(q => { const d = (q.x - x) ** 2 + (q.y - y) ** 2; if (d < bd) { bd = d; best = i; } }));
+    hover = bd < 34 * 34 ? best : -1;
+    if (hover < 0) { tip.classList.remove("on"); return; }
+    const g = GENOME[hover];
+    tip.innerHTML = `<b>${g.name}</b>` + ORDER.map(f => `<div><span style="color:${COLORS[f]}">${f}</span><span>${fmt(g.f[f].start)} <i>to</i> ${fmt(g.f[f].now)}</span></div>`).join("");
+    tip.style.left = Math.min(x + 18, r.width - 230) + "px"; tip.style.top = Math.max(10, y - 30) + "px"; tip.classList.add("on");
+  }
+  const fmt = v => Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2);
+  cv.addEventListener("pointermove", pick); cv.addEventListener("pointerdown", pick);
+  cv.addEventListener("pointerleave", () => { hover = -1; tip.classList.remove("on"); });
+  addEventListener("scroll", () => { boost = Math.min(.05, boost + .006); }, {passive: true});
+  addEventListener("resize", size);
+  new IntersectionObserver(([e]) => { const was = running; running = e.isIntersecting && !document.hidden;
+    if (running && !was) requestAnimationFrame(frame); }).observe(cv);
+  document.addEventListener("visibilitychange", () => { const was = running; running = !document.hidden;
+    if (running && !was) requestAnimationFrame(frame); });
+  size(); requestAnimationFrame(frame);
+})();
+/* L'evoluzione dei popoli: le perle scorrono dal valore dei fondatori a quello di oggi */
+const seen = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("seen"); seen.unobserve(e.target); } }), {threshold: .3});
+document.querySelectorAll(".people").forEach(p => seen.observe(p));
+/* Albero: linee curve tra le invenzioni che si combinano, disegnate quando l'albero entra in vista */
+(() => {
+  const svg = document.getElementById("links"), grid = document.getElementById("treegrid");
+  function draw(animate) {
+    const g = grid.getBoundingClientRect(); svg.innerHTML = "";
+    LINKS.forEach(([a, b]) => {
+      const A = document.getElementById("inv-" + a), B = document.getElementById("inv-" + b); if (!A || !B) return;
+      const ra = A.getBoundingClientRect(), rb = B.getBoundingClientRect();
+      const x1 = ra.right - g.left - 6, y1 = ra.top + ra.height / 2 - g.top, x2 = rb.left - g.left + 26, y2 = rb.top + rb.height / 2 - g.top;
+      const p = document.createElementNS("http://www.w3.org/2000/svg", "path"), dx = Math.max(40, (x2 - x1) / 2);
+      p.setAttribute("d", `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`);
+      svg.appendChild(p);
+      if (animate && !still) { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+        p.getBoundingClientRect(); p.style.transition = "stroke-dashoffset 1.6s ease-out"; p.style.strokeDashoffset = 0;
+        setTimeout(() => { p.style.strokeDasharray = ""; p.style.transition = ""; }, 1800); }
+    });
+  }
+  let shown = false;
+  new IntersectionObserver(([e]) => { if (e.isIntersecting && !shown) { shown = true; draw(true); } }, {threshold: .25}).observe(grid);
+  addEventListener("resize", () => shown && draw(false));
+  const detail = document.getElementById("detail");
+  document.querySelectorAll(".inv").forEach(btn => btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    document.querySelectorAll(".inv").forEach(b => b.setAttribute("aria-expanded", "false"));
+    if (open) { detail.classList.remove("on"); return; }
+    btn.setAttribute("aria-expanded", "true"); const d = btn.dataset;
+    detail.innerHTML = `<h3>${btn.querySelector(".iname").textContent}</h3><small>Born from: ${d.need}${d.req ? ", needs " + d.req : ""}</small>
+      <p class="plus">+ ${d.gain}</p><p class="minus">− ${d.cost}</p><p>Discovered by: ${d.who}</p>`;
+    detail.classList.add("on");
+  }));
+})();
+</script></body></html>
