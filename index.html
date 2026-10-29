@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EDEN · Evolution Wars</title><meta name="description" content="A live evolution sim on a Raspberry Pi: three species evolve on their own, civilization grows only if people play.">
+<style>
+:root{--bg:#0b1116;--panel:#121c23;--line:#24343d;--ink:#ecefe9;--muted:#9aa9ad;--gold:#ecbe78;--parch:#ead2a0;--brown:#3a2614}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--gold)}main{max-width:1180px;margin:0 auto;padding:0 16px 48px}
+.hero{position:relative;min-height:340px;display:flex;align-items:flex-end;background:#000 center/cover no-repeat;border-bottom:3px solid var(--gold)}
+.hero .in{width:100%;padding:28px 16px;background:linear-gradient(transparent,rgba(5,8,10,.92) 55%)}
+.hero h1{margin:0;font-size:clamp(30px,6vw,56px);letter-spacing:2px}.hero p{margin:4px 0;color:#d8d2c2}
+.btn{display:inline-block;margin:10px 8px 0 0;padding:10px 16px;border-radius:8px;background:var(--gold);color:#201409;font-weight:700;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+h2{margin:40px 0 12px;font-size:26px;color:var(--gold)}h2 small{display:block;font-size:14px;color:var(--muted);font-weight:400}
+.progress{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:16px;align-items:center}
+.progress img{width:56px}.bar{height:16px;background:#2a1a10;border:2px solid var(--gold);border-radius:8px;overflow:hidden}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#f6a43a,#ffd774)}
+.factions{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.faction{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;padding:16px}
+.faction .emblem{width:64px;float:right}.faction h3{margin:0;color:var(--c);font-size:24px}.role{margin:0;color:var(--muted)}
+.big{font-size:26px;font-weight:800;margin:10px 0}.big small{font-size:14px;color:var(--muted);font-weight:400}
+.label{margin:10px 0 2px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.form{display:flex;gap:4px}.form i{width:16px;height:16px;border-radius:4px;background:#26343b}
+.faction ul{margin:0;padding-left:18px}
+.tree{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px}
+.era{flex:0 0 300px;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.era h3{margin:0;color:var(--gold)}.era h3 small{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.era.future{opacity:.55}.era.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.era-story{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.node{display:flex;gap:10px;padding:10px;margin:8px 0;border:1px solid var(--line);border-radius:10px;background:#0e161c}
+.node.found{border-color:var(--gold)}.node .icon{flex:0 0 56px;height:56px;display:flex;align-items:center;justify-content:center}
+.node img{max-width:56px;max-height:56px;filter:grayscale(.85) brightness(.75)}.node.found img{filter:none}
+.q{font-size:28px;font-weight:800;color:#56656b}.node b{display:block}.node p{margin:4px 0;font-size:13px;color:#c9d1cf}
+.need,.req{display:inline-block;margin:2px 6px 0 0;padding:1px 8px;border-radius:999px;font-size:11px;background:#22313a;color:var(--muted)}
+.req{background:#3a2c18;color:var(--gold)}.owners{display:flex;gap:4px;align-items:center}.owners i{width:14px;height:14px;border-radius:50%}
+.owners em{font-size:12px;color:#6d7c80}
+.book{background:var(--parch);color:var(--brown);border:4px solid #b88a3e;border-radius:10px;padding:28px 6%;box-shadow:inset 0 0 40px rgba(120,80,30,.35)}
+.book h2 img{width:44px;vertical-align:middle;margin-right:10px}
+.book h2{color:#7a281c;margin-top:0;text-align:center}.book ol{list-style:none;margin:0;padding:0;max-height:520px;overflow:auto}
+.book li{padding:6px 0;border-bottom:1px dashed rgba(58,38,20,.25)}.book li b{color:#7a281c}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cols>div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.cols h3{margin-top:0;color:var(--gold)}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:40px}
+@media (max-width:600px){.book{padding:20px 16px}.hero{min-height:260px}}
+</style></head><body>
+<header class="hero" style="background-image:url(art/era_istinto.jpg)"><div class="in"><main style="padding:0">
+  <h1>EDEN</h1><p><b>Year 3,737</b> · Age of Instinct</p>
+  <p>Three species evolve on their own, live, 24/7. Their civilization grows only if people play.</p>
+  <a class="btn" href="https://twitch.tv/edenevolutionwars">▶ Watch live on Twitch</a><a class="btn ghost" href="https://www.youtube.com/@edenevolutionwars">YouTube</a>
+</main></div></header>
+<main>
+  <h2>Next age<small>The world advances only if people play: type S, N or R in the Twitch chat</small></h2>
+  <div class="progress"><img src="art/fiamma_civilta.png" alt=""><div style="flex:1"><p>Coming soon: every player who plays in a day feeds the Fire of Civilization. Enough players and the whole world enters the <b>Age of Language</b>.</p></div></div>
+  <h2>The three peoples<small>Wins, species and how their genes changed</small></h2>
+  <div class="factions">
+      <article class="faction" style="--c:#e25252">
+        <img src="art/emblema_ravagers.png" alt="" class="emblem">
+        <h3>Ravagers</h3><p class="role">hunters</p>
+        <p class="big">1,267 <small>years won · 34%</small></p>
+        <p class="label">last 10 years</p><div class="form"><i style="background:#e25252"></i><i></i><i></i><i></i><i></i><i style="background:#e25252"></i><i style="background:#e25252"></i><i style="background:#e25252"></i><i></i><i></i></div>
+        <p class="label">species</p><p>Ravagers · 8 extinct</p>
+        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
+        <p class="label">evolution since the start</p><ul><li>Meat in diet <b>-7%</b></li><li>Speed <b>+6%</b></li><li>Home habitat <b>+5%</b></li></ul>
+      </article>
+      <article class="faction" style="--c:#49bfda">
+        <img src="art/emblema_nomads.png" alt="" class="emblem">
+        <h3>Nomads</h3><p class="role">fast explorers</p>
+        <p class="big">1,262 <small>years won · 34%</small></p>
+        <p class="label">last 10 years</p><div class="form"><i></i><i style="background:#49bfda"></i><i></i><i></i><i></i><i></i><i></i><i></i><i style="background:#49bfda"></i><i style="background:#49bfda"></i></div>
+        <p class="label">species</p><p>Sparse Nomads · 5 extinct</p>
+        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
+        <p class="label">evolution since the start</p><ul><li>Speed <b>+6%</b></li><li>Energy efficiency <b>+4%</b></li><li>Home habitat <b>+4%</b></li></ul>
+      </article>
+      <article class="faction" style="--c:#5dca79">
+        <img src="art/emblema_sylvans.png" alt="" class="emblem">
+        <h3>Sylvans</h3><p class="role">plant eaters</p>
+        <p class="big">1,207 <small>years won · 32%</small></p>
+        <p class="label">last 10 years</p><div class="form"><i></i><i></i><i style="background:#5dca79"></i><i style="background:#5dca79"></i><i style="background:#5dca79"></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="label">species</p><p>Sylvans · 4 extinct</p>
+        <p class="label">abilities</p><p>Swimmers, Climbers, Burrowers, Pack hunters</p>
+        <p class="label">evolution since the start</p><ul><li>Speed <b>+10%</b></li><li>Camouflage <b>-3%</b></li><li>Vision <b>+2%</b></li></ul>
+      </article></div>
+  <h2>Tree of inventions<small>Not written in advance: each people invents from what it suffers, with a part of chance.
+  Grey = not discovered yet · the colored dot shows who discovered it</small></h2>
+  <div class="tree">
+        <section class="era now">
+          <h3><small>Age 1</small>Age of Instinct</h3>
+          <p class="era-story">Only instinct. Small discoveries to survive cold, hunger and hunters.</p>
+          
+          <div class="node">
+            <div class="icon"><img src="art/inv_fuoco.png" alt=""></div>
+            <div><b>Fire</b><span class="need">Cold</span>
+            
+            <p>+ less energy lost in winter near the nest<br>&minus; hunters see it from far away</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_tane_profonde.png" alt=""></div>
+            <div><b>Deep Burrows</b><span class="need">Cold</span>
+            
+            <p>+ safe underground in winter<br>&minus; slower to move</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_pelliccia_condivisa.png" alt=""></div>
+            <div><b>Shared Fur</b><span class="need">Cold</span>
+            
+            <p>+ less cold when they stay together<br>&minus; diseases spread faster</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_scorte.png" alt=""></div>
+            <div><b>Food Stores</b><span class="need">Hunger</span>
+            
+            <p>+ food in the nest lasts longer<br>&minus; stores attract raids</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_raccolta_gruppo.png" alt=""></div>
+            <div><b>Group Foraging</b><span class="need">Hunger</span>
+            
+            <p>+ they find food further away<br>&minus; cubs are left alone</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_cammino_acqua.png" alt=""></div>
+            <div><b>Path to Water</b><span class="need">Thirst</span>
+            
+            <p>+ faster to the water<br>&minus; hunters learn the path</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_mimetismo.png" alt=""></div>
+            <div><b>Group Camouflage</b><span class="need">Hunters</span>
+            
+            <p>+ hide better in the forest<br>&minus; slower outside the forest</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_zattere.png" alt=""></div>
+            <div><b>Rafts</b><span class="need">Hunters</span>
+            
+            <p>+ escape on the water<br>&minus; need lakes nearby</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><img src="art/inv_erbe_medicinali.png" alt=""></div>
+            <div><b>Healing Herbs</b><span class="need">Disease</span>
+            
+            <p>+ the sick heal faster<br>&minus; less time to look for food</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Expert Swimmers</b><span class="need">Water</span>
+            
+            <p>+ faster in the water<br>&minus; tire sooner on land</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+        </section>
+        <section class="era future">
+          <h3><small>Age 2</small>Age of Language</h3>
+          <p class="era-story">The factions start to talk: tribes with names, leaders and traditions passed to the young.</p>
+          
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Alarm Calls</b><span class="need">Hunters</span>
+            
+            <p>+ sentinels warn the group<br>&minus; sentinels eat less</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Coordinated Foraging</b><span class="need">Hunger</span>
+            
+            <p>+ more food in groups<br>&minus; the weak stay behind</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>New Tribe</b><span class="need">Crowding</span>
+            
+            <p>+ half the group founds a new named nest<br>&minus; two nests to defend</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Quarantine</b><span class="need">Disease</span>
+            
+            <p>+ the sick move away, fewer infections<br>&minus; the sick die alone more often</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Traditions</b><span class="need">Any</span>
+            
+            <p>+ the young copy a habit of the elders<br>&minus; a bad habit is passed on too</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Cooking</b><span class="need">Hunger</span>
+            <span class="req">needs Fire</span>
+            <p>+ food gives more energy<br>&minus; fires to keep alive</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Torches</b><span class="need">Hunters</span>
+            <span class="req">needs Fire</span>
+            <p>+ hunters flee at night<br>&minus; everyone sees you coming</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Tunnels</b><span class="need">Crowding</span>
+            <span class="req">needs Deep Burrows</span>
+            <p>+ move underground between two nests<br>&minus; collapses in floods</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Raft Fishing</b><span class="need">Hunger</span>
+            <span class="req">needs Rafts</span>
+            <p>+ food from the water<br>&minus; rafts get lost in storms</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+          <div class="node">
+            <div class="icon"><span class="q">?</span></div>
+            <div><b>Healers</b><span class="need">Disease</span>
+            <span class="req">needs Healing Herbs</span>
+            <p>+ one creature heals the others<br>&minus; the healer gets sick often</p>
+            <div class="owners"><em>not discovered yet</em></div></div>
+          </div>
+        </section>
+        <section class="era future">
+          <h3><small>Age 3</small>Age of Villages</h3>
+          <p class="era-story">Farming, wells and palisades: nests become villages.</p>
+          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
+        </section>
+        <section class="era future">
+          <h3><small>Age 4</small>Age of Crafts</h3>
+          <p class="era-story">Tools, defenses and boats.</p>
+          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
+        </section>
+        <section class="era future">
+          <h3><small>Age 5</small>Age of Trade and War</h3>
+          <p class="era-story">Trade, alliances and wars between tribes.</p>
+          <div class="node locked"><div class="icon"><span class="q">?</span></div><div><b>Unknown</b><p>Inventions of this age will be revealed when the world gets here.</p></div></div>
+        </section></div>
+  <h2 style="text-align:center">&nbsp;</h2>
+  <section class="book"><h2><img src="art/icona_libro.png" alt="">The Book of EDEN</h2><ol><li><b>Year 3,723</b> · The Nomads are extinct</li><li><b>Year 3,722</b> · A new species is born: Sparse Nomads</li><li><b>Year 3,478</b> · The Bright Nomads are extinct</li><li><b>Year 3,391</b> · The Sparse Sylvans are extinct</li><li><b>Year 3,390</b> · A new species is born: Sparse Sylvans</li><li><b>Year 3,123</b> · The Sparse Ravagers are extinct</li><li><b>Year 2,641</b> · The Sparse Sylvans are extinct</li><li><b>Year 2,636</b> · A new species is born: Sparse Sylvans</li><li><b>Year 2,614</b> · A new species is born: Sparse Ravagers</li><li><b>Year 2,387</b> · The Grazing Ravagers are extinct</li><li><b>Year 2,222</b> · The Fierce Ravagers are extinct</li><li><b>Year 2,222</b> · A new species is born: Grazing Ravagers</li><li><b>Year 2,164</b> · A new species is born: Bright Nomads</li><li><b>Year 2,162</b> · The Sparse Nomads are extinct</li><li><b>Year 2,025</b> · The Desert Ravagers are extinct</li><li><b>Year 2,024</b> · A new species is born: Desert Ravagers</li><li><b>Year 1,921</b> · The Long-lived Nomads are extinct</li><li><b>Year 1,918</b> · A new species is born: Long-lived Nomads</li><li><b>Year 1,873</b> · The Dim-eyed Nomads are extinct</li><li><b>Year 1,872</b> · A new species is born: Dim-eyed Nomads</li><li><b>Year 1,858</b> · The Pack Ravagers are extinct</li><li><b>Year 1,856</b> · A new species is born: Pack Ravagers</li><li><b>Year 1,765</b> · A new species is born: Fierce Ravagers</li><li><b>Year 1,764</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,569</b> · A new species is born: Sparse Ravagers</li><li><b>Year 1,542</b> · A new species is born: Sparse Nomads</li><li><b>Year 1,301</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,292</b> · A new species is born: Sparse Ravagers</li><li><b>Year 1,136</b> · The Swimming Sylvans are extinct</li><li><b>Year 1,019</b> · The Sparse Ravagers are extinct</li><li><b>Year 1,011</b> · A new species is born: Sparse Ravagers</li><li><b>Year 817</b> · A new species is born: Swimming Sylvans</li><li><b>Year 816</b> · The Sparse Sylvans are extinct</li><li><b>Year 786</b> · A new species is born: Sparse Sylvans</li></ol></section>
+  <h2>Players<small>Support your people: type S, N or R and a creature with your name joins them</small></h2>
+  
+      <div class="cols"><div><h3>Hall of Fame</h3><ol><li><b>10-18 → 10-25</b> truewormshow 270 · paddel_pat 200 · xjustinjx 200</li></ol></div>
+      <div><h3>Longest family lines</h3><ol><li>vortex3636 <b>gen 29</b></li><li>thknhry <b>gen 25</b></li><li>ramkiller2142 <b>gen 24</b></li><li>tytoons <b>gen 23</b></li><li>thburninator <b>gen 23</b></li><li>zebthetall <b>gen 23</b></li><li>tommogotchi <b>gen 20</b></li><li>cizzop <b>gen 20</b></li></ol></div></div>
+  <footer>Updated 2026-10-29 12:38 UTC · data from the live sim on a Raspberry Pi 5 ·
+  <a href="https://twitch.tv/edenevolutionwars">twitch.tv/edenevolutionwars</a></footer>
+</main></body></html>
